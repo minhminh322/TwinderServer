@@ -4,6 +4,16 @@ public class TwinderBody {
     private int swipee;
     private String comment;
 
+    private long startTime;
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
     public String getSwipe() {
         return swipe;
     }

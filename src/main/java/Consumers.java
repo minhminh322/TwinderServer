@@ -8,15 +8,17 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Consumers {
+public class Consumers implements Configuration {
 //    private static ;
 
-    private static final String[] RPC_QUEUE_LIST = {"LIKE_QUEUE", "MATCH_QUEUE"};
+//    private static final String[] RPC_QUEUE_LIST = {"LIKE_QUEUE", "MATCH_QUEUE"};
+    private static final String[] RPC_QUEUE_LIST = {"TWINDER_QUEUE"};
 
     private static Connection connection;
 
     private static  Gson gson;
 
+    private static TwinderDao dbDao;
     private static MessageConsumer mc;
     private static String processData(String mess) {
         return mess;
@@ -44,14 +46,17 @@ public class Consumers {
                         String message = new String(delivery.getBody(), "UTF-8");
                         TwinderBody tb = gson.fromJson(message, TwinderBody.class);
 
-                        mc.readData(tb);
-                        if (RPC_QUEUE_NAME == "LIKE_QUEUE") {
-                            response += "LIKE_QUEUE: ";
-                            response += String.valueOf(mc.getLikeAndDislike(String.valueOf(tb.getSwiper())));
-                        } else if (RPC_QUEUE_NAME == "MATCH_QUEUE") {
-                            response += "MATCH_QUEUE: ";
-                            response = String.valueOf(mc.getMatch(String.valueOf(tb.getSwiper())));
-                        }
+                        dbDao.createMessage(tb);
+
+                        response = message;
+//                        mc.readData(tb);
+//                        if (RPC_QUEUE_NAME == "LIKE_QUEUE") {
+//                            response += "LIKE_QUEUE: ";
+//                            response += String.valueOf(mc.getLikeAndDislike(String.valueOf(tb.getSwiper())));
+//                        } else if (RPC_QUEUE_NAME == "MATCH_QUEUE") {
+//                            response += "MATCH_QUEUE: ";
+//                            response = String.valueOf(mc.getMatch(String.valueOf(tb.getSwiper())));
+//                        }
 
 //                        System.out.println(" [.] Consume (" + numberOfLike + ")");
 //                        response += processData(String.valueOf(numberOfLike));
@@ -81,10 +86,12 @@ public class Consumers {
         factory.setUsername("admin");
         factory.setPassword("admin");
         factory.setVirtualHost("cherry_broker");
-        factory.setHost("34.220.100.97");
+        factory.setHost(RabbitMQ_Instance);
         factory.setPort(5672);
         connection = factory.newConnection();
         gson = new Gson();
+        dbDao = new TwinderDao();
+
         mc = new MessageConsumer();
 
 
